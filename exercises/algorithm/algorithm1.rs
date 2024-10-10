@@ -6,6 +6,13 @@
 
 use std::fmt::{self, Display, Formatter};
 use std::ptr::NonNull;
+// use std::any::type_name;
+// use core::cmp::Ordering;
+// use core::sync::atomic::Ordering;
+use std::cmp::Ordering;
+// use std::sync::atomic::Ordering;
+
+#[allow(unused_imports)]
 use std::vec::*;
 
 #[derive(Debug)]
@@ -22,6 +29,10 @@ impl<T> Node<T> {
         }
     }
 }
+
+
+
+
 #[derive(Debug)]
 struct LinkedList<T> {
     length: u32,
@@ -34,6 +45,14 @@ impl<T> Default for LinkedList<T> {
         Self::new()
     }
 }
+
+
+// impl<T> PartialOrd for LinkedList<T> {
+//     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+//         Some(self.cmp(other))
+//     }
+// }
+
 
 impl<T> LinkedList<T> {
     pub fn new() -> Self {
@@ -69,14 +88,54 @@ impl<T> LinkedList<T> {
             },
         }
     }
-	pub fn merge(list_a:LinkedList<T>,list_b:LinkedList<T>) -> Self
+
+
+	pub fn merge(list_a:LinkedList<T>, list_b:LinkedList<T>) -> Self
 	{
 		//TODO
-		Self {
+		let mut result_list = Self {
             length: 0,
             start: None,
             end: None,
+        };
+
+        let mut current_a_node: Option<NonNull<Node<T>>> = list_a.start;
+        let mut current_b_node: Option<NonNull<Node<T>>> = list_b.start;
+        
+        while current_a_node.is_some() || current_b_node.is_some() {
+            match (current_a_node, current_b_node) {
+                (Some(node_a_ptr), Some(node_b_ptr)) => {
+                    let a_val = unsafe { node_a_ptr.as_ref().val };
+                    let b_val = unsafe { node_b_ptr.as_ref().val };
+    
+                    if a_val <= b_val  {
+                        result_list.add(a_val);
+                        current_a_node = unsafe { node_a_ptr.as_ref().next };
+                    } else {
+                        result_list.add(b_val);
+                        current_b_node = unsafe { node_b_ptr.as_ref().next };
+                    }
+                }
+                (Some(node_a_ptr), None) => {
+                    let a_val = unsafe { node_a_ptr.as_ref().val };
+                    result_list.add(a_val);
+                    current_a_node = unsafe { node_a_ptr.as_ref().next };
+                }
+                (None, Some(node_b_ptr)) => {
+                    let b_val = unsafe { node_b_ptr.as_ref().val };
+                    result_list.add(b_val);
+                    current_b_node = unsafe { node_b_ptr.as_ref().next };
+                }
+                (None, None) => break,
+            }
         }
+    
+
+
+        // result_list.length = list_a.length + list_b.length;
+        result_list
+
+
 	}
 }
 
@@ -164,6 +223,11 @@ mod tests {
 			list_b.add(vec_b[i]);
 		}
 		println!("list a {} list b {}", list_a,list_b);
+
+        for i in 0..vec_a.len() {
+            println!("lista:{}",*list_a.get(i as i32).unwrap())
+        }
+
 		let mut list_c = LinkedList::<i32>::merge(list_a,list_b);
 		println!("merged List is {}", list_c);
 		for i in 0..target_vec.len(){

@@ -6,6 +6,8 @@
 
 use std::fmt::{self, Display, Formatter};
 use std::ptr::NonNull;
+
+#[allow(unused_imports)]
 use std::vec::*;
 
 #[derive(Debug)]
@@ -74,6 +76,17 @@ impl<T> LinkedList<T> {
     }
 	pub fn reverse(&mut self){
 		// TODO
+        let mut current: Option<NonNull<Node<T>>> = self.start.take();
+        self.start = self.end.take();
+        self.end =  current;
+        // unsafe {current.as_mut().map(|node| node.prev.as_ptr().take())};
+
+        // while let Some(mut node) = current {
+        //     let mut node_prev = unsafe {node.as_ref().prev.take()};
+        //     let mut node_next = unsafe {node.as_ref().next.take()};
+        //     std::mem::swap(&mut node_prev, &mut node_next);
+        //     current = unsafe {node.as_ref().next};
+        // }
 	}
 }
 
