@@ -2,18 +2,15 @@
 	single linked list merge
 	This problem requires you to merge two ordered singly linked lists into one ordered singly linked list
 */
-// I AM NOT DONE
+
 
 use std::fmt::{self, Display, Formatter};
 use std::ptr::NonNull;
-// use std::any::type_name;
-// use core::cmp::Ordering;
-// use core::sync::atomic::Ordering;
-use std::cmp::Ordering;
-// use std::sync::atomic::Ordering;
+
 
 #[allow(unused_imports)]
 use std::vec::*;
+
 
 #[derive(Debug)]
 struct Node<T> {
@@ -28,33 +25,27 @@ impl<T> Node<T> {
             next: None,
         }
     }
+    
+    // 获取当前节点的可变引用
+    unsafe fn as_mut(&mut self) -> &mut Node<T> {
+        self
+    }
+
 }
 
 
 
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 struct LinkedList<T> {
     length: u32,
     start: Option<NonNull<Node<T>>>,
     end: Option<NonNull<Node<T>>>,
 }
 
-impl<T> Default for LinkedList<T> {
-    fn default() -> Self {
-        Self::new()
-    }
-}
 
 
-// impl<T> PartialOrd for LinkedList<T> {
-//     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-//         Some(self.cmp(other))
-//     }
-// }
-
-
-impl<T> LinkedList<T> {
+impl<T: PartialOrd + Clone> LinkedList<T> {
     pub fn new() -> Self {
         Self {
             length: 0,
@@ -62,7 +53,7 @@ impl<T> LinkedList<T> {
             end: None,
         }
     }
-
+    
     pub fn add(&mut self, obj: T) {
         let mut node = Box::new(Node::new(obj));
         node.next = None;
@@ -93,47 +84,40 @@ impl<T> LinkedList<T> {
 	pub fn merge(list_a:LinkedList<T>, list_b:LinkedList<T>) -> Self
 	{
 		//TODO
-		let mut result_list = Self {
-            length: 0,
-            start: None,
-            end: None,
-        };
 
-        let mut current_a_node: Option<NonNull<Node<T>>> = list_a.start;
-        let mut current_b_node: Option<NonNull<Node<T>>> = list_b.start;
-        
-        while current_a_node.is_some() || current_b_node.is_some() {
-            match (current_a_node, current_b_node) {
-                (Some(node_a_ptr), Some(node_b_ptr)) => {
-                    let a_val = unsafe { node_a_ptr.as_ref().val };
-                    let b_val = unsafe { node_b_ptr.as_ref().val };
-    
-                    if a_val <= b_val  {
-                        result_list.add(a_val);
-                        current_a_node = unsafe { node_a_ptr.as_ref().next };
-                    } else {
-                        result_list.add(b_val);
-                        current_b_node = unsafe { node_b_ptr.as_ref().next };
-                    }
+
+        let mut result = LinkedList::new();
+        let mut current1 = list_a.start;
+        let mut current2 = list_b.start;
+
+        while let (Some(node1), Some(node2)) = (current1, current2) {
+            unsafe {
+                if (*node1.as_ptr()).val <= (*node2.as_ptr()).val {
+                    result.add((*node1.as_ptr()).val.clone());
+                    current1 = (*node1.as_ptr()).next;
+                } else {
+                    result.add((*node2.as_ptr()).val.clone());
+                    current2 = (*node2.as_ptr()).next;
                 }
-                (Some(node_a_ptr), None) => {
-                    let a_val = unsafe { node_a_ptr.as_ref().val };
-                    result_list.add(a_val);
-                    current_a_node = unsafe { node_a_ptr.as_ref().next };
-                }
-                (None, Some(node_b_ptr)) => {
-                    let b_val = unsafe { node_b_ptr.as_ref().val };
-                    result_list.add(b_val);
-                    current_b_node = unsafe { node_b_ptr.as_ref().next };
-                }
-                (None, None) => break,
             }
         }
-    
 
+        // 将剩余的节点添加到结果链表中
+        while let Some(node) = current1 {
+            unsafe {
+                result.add((*node.as_ptr()).val.clone());
+                current1 = (*node.as_ptr()).next;
+            }
+        }
+        while let Some(node) = current2 {
+            unsafe {
+                result.add((*node.as_ptr()).val.clone());
+                current2 = (*node.as_ptr()).next;
+            }
+        }
+        
 
-        // result_list.length = list_a.length + list_b.length;
-        result_list
+        result
 
 
 	}

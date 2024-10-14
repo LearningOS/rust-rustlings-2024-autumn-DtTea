@@ -2,10 +2,13 @@
 	double linked list reverse
 	This problem requires you to reverse a doubly linked list
 */
-// I AM NOT DONE
+
 
 use std::fmt::{self, Display, Formatter};
 use std::ptr::NonNull;
+// use std::ptr;
+use core::mem::swap;
+// use core::ptr::swap;
 
 #[allow(unused_imports)]
 use std::vec::*;
@@ -24,6 +27,10 @@ impl<T> Node<T> {
             prev: None,
             next: None,
         }
+    }
+    
+    unsafe fn as_mut(&mut self) -> &mut Node<T> {
+        self
     }
 }
 #[derive(Debug)]
@@ -76,17 +83,49 @@ impl<T> LinkedList<T> {
     }
 	pub fn reverse(&mut self){
 		// TODO
-        let mut current: Option<NonNull<Node<T>>> = self.start.take();
-        self.start = self.end.take();
-        self.end =  current;
-        // unsafe {current.as_mut().map(|node| node.prev.as_ptr().take())};
+        
+        let mut current_p = self.start;
+        swap(&mut self.start, &mut self.end);
+                
 
-        // while let Some(mut node) = current {
-        //     let mut node_prev = unsafe {node.as_ref().prev.take()};
-        //     let mut node_next = unsafe {node.as_ref().next.take()};
-        //     std::mem::swap(&mut node_prev, &mut node_next);
-        //     current = unsafe {node.as_ref().next};
-        // }
+        while let Some(node) = current_p {
+            // 交换当前节点的 prev 和 next 指针
+            // let mut next_ptr = unsafe { (*node.as_ptr()).next.take() };
+            
+            // let mut next_p = unsafe { (*node.as_ptr()).next.take() };
+            // let mut prev_p = unsafe { (*node.as_ptr()).prev.take() };
+            
+            // if Some(next_p).is_some()  {
+            //     unsafe {
+            //         // (*next_p.as_ptr()).prev = Some(node);
+            //         (*node.as_ptr()).prev = next_p;
+            //     }
+            // } else {
+            //     unsafe {
+            //         // (*node.as_ptr()).next = None;
+            //         (*node.as_ptr()).prev = None;
+            //     }
+            // }
+
+            // if Some(prev_p).is_some() {
+            //     unsafe {
+            //         // (*prev_p.as_ptr()).next = Some(node);
+            //         (*node.as_ptr()).next = prev_p;
+            //     }
+            // } else {
+            //     unsafe {
+            //         // (*node.as_ptr()).prev = None;
+            //         (*node.as_ptr()).next = None;
+            //     }
+            // }
+            let mut next_ptr = unsafe { (*node.as_ptr()).next.take() };
+            unsafe {
+                // swap(&mut (*node.as_ptr()).prev, &mut (*node.as_ptr()).next);
+                swap(&mut (*node.as_ptr()).prev, &mut (*node.as_ptr()).next);
+            }
+
+            current_p = next_ptr;            
+        }  
 	}
 }
 
