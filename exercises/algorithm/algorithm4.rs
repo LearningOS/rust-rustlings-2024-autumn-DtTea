@@ -4,6 +4,7 @@
 */
 
 //I AM NOT DONE
+#[allow(unused_imports)]
 use std::cmp::Ordering;
 use std::fmt::Debug;
 
@@ -51,12 +52,42 @@ where
     // Insert a value into the BST
     fn insert(&mut self, value: T) {
         //TODO
+        match self.root {
+            None => self.root = Some(Box::new(TreeNode::new(value))),
+            Some(ref mut node) => {
+                if value < node.value {
+                    if let Some(ref mut left) = node.left {
+                        left.insert(value);
+                    } else {
+                        node.left = Some(Box::new(TreeNode::new(value)));
+                    }
+                } else {
+                    if let Some(ref mut right) = node.right {
+                        right.insert(value);
+                    } else {
+                        node.right = Some(Box::new(TreeNode::new(value)));
+                    }
+                }
+            }
+        }
     }
 
     // Search for a value in the BST
     fn search(&self, value: T) -> bool {
         //TODO
-        true
+        match self.root {
+            None => false,
+            Some(ref node) => {
+                if value == node.value {
+                    true
+                } else if value < node.value {
+                    node.left.as_ref().map_or(false, |left| left.search(value))
+                } else {
+                    node.right.as_ref().map_or(false, |right| right.search(value))
+                }
+            }
+        }
+        // false
     }
 }
 
@@ -67,7 +98,29 @@ where
     // Insert a node into the tree
     fn insert(&mut self, value: T) {
         //TODO
+        if value < self.value {
+            if let Some(ref mut left) = self.left {
+                left.insert(value);
+            } else {
+                self.left = Some(Box::new(TreeNode {
+                    value,
+                    left: None,
+                    right: None,
+                }));
+            }
+        } else {
+            if let Some(ref mut right) = self.right {
+                right.insert(value);
+            } else {
+                self.right = Some(Box::new(TreeNode {
+                    value,
+                    left: None,
+                    right: None,
+                }));
+            }
+        }
     }
+
 }
 
 
