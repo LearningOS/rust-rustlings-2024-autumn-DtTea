@@ -3,7 +3,7 @@
 	This problem requires you to implement a basic interface for a binary tree
 */
 
-//I AM NOT DONE
+
 #[allow(unused_imports)]
 use std::cmp::Ordering;
 use std::fmt::Debug;
@@ -17,7 +17,10 @@ where
     value: T,
     left: Option<Box<TreeNode<T>>>,
     right: Option<Box<TreeNode<T>>>,
+    
+    
 }
+
 
 #[derive(Debug)]
 struct BinarySearchTree<T>
@@ -37,6 +40,11 @@ where
             left: None,
             right: None,
         }
+    }
+    
+    // 获取当前节点的可变引用
+    unsafe fn as_mut(&mut self) -> &mut TreeNode<T> {
+        self
     }
 }
 
@@ -61,7 +69,7 @@ where
                     } else {
                         node.left = Some(Box::new(TreeNode::new(value)));
                     }
-                } else {
+                } else if value > node.value {
                     if let Some(ref mut right) = node.right {
                         right.insert(value);
                     } else {
@@ -75,19 +83,20 @@ where
     // Search for a value in the BST
     fn search(&self, value: T) -> bool {
         //TODO
-        match self.root {
+        self.search_recursive(&self.root, value)
+    }
+    
+    fn search_recursive(&self, node: &Option<Box<TreeNode<T>>>, value: T) -> bool {
+        match node {
             None => false,
-            Some(ref node) => {
-                if value == node.value {
-                    true
-                } else if value < node.value {
-                    node.left.as_ref().map_or(false, |left| left.search(value))
-                } else {
-                    node.right.as_ref().map_or(false, |right| right.search(value))
+            Some(ref n) => {
+                match value.cmp(&n.value) {
+                    Ordering::Less => self.search_recursive(&n.left, value),
+                    Ordering::Greater => self.search_recursive(&n.right, value),
+                    Ordering::Equal => true,
                 }
             }
         }
-        // false
     }
 }
 
@@ -98,6 +107,7 @@ where
     // Insert a node into the tree
     fn insert(&mut self, value: T) {
         //TODO
+        
         if value < self.value {
             if let Some(ref mut left) = self.left {
                 left.insert(value);
