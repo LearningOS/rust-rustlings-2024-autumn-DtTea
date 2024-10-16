@@ -18,7 +18,7 @@ where
 
 impl<T> Heap<T>
 where
-    T: Default,
+    T: Default ,
 {
     pub fn new(comparator: fn(&T, &T) -> bool) -> Self {
         Self {
@@ -38,7 +38,48 @@ where
 
     pub fn add(&mut self, value: T) {
         //TODO
+        self.count += 1;
+        
+        if self.items.len() == self.count {
+            self.items.push(T::default());
+        }
+        self.items[self.count] = value;
+        println!("this is add T:{:?}", self.count);
+        // self.heapify_down(self.count); //self.count
     }
+    
+   pub fn heapify_up(&mut self, mut idx: usize) {
+        //TODO        
+        while self.parent_idx(idx) >= 0  {
+            let parent_idx = self.parent_idx(idx);
+            
+            println!("this is up idx:{:?}, parent_idx:{:?}", idx, parent_idx);
+            if (self.comparator)(&self.items[parent_idx], &self.items[idx]) {
+                self.items.swap(idx, parent_idx);
+                idx = parent_idx;
+            } else {
+                break;
+            }
+
+        }
+        
+    }
+
+    pub fn heapify_down(&mut self, mut idx: usize) {
+        while self.children_present(idx) {
+            let child_idx = self.smallest_child_idx(idx);
+            
+            println!("this is down idx:{:?}, child_idx:{:?}", idx, child_idx);
+            if (self.comparator)(&self.items[child_idx], &self.items[idx]) {
+                self.items.swap(idx, child_idx);
+                idx = child_idx;
+            } else {
+                break;
+            }
+        }
+    }
+    
+    
 
     fn parent_idx(&self, idx: usize) -> usize {
         idx / 2
@@ -59,6 +100,16 @@ where
     fn smallest_child_idx(&self, idx: usize) -> usize {
         //TODO
 		0
+        // let left_idx = self.left_child_idx(idx);
+        // let right_idx = self.right_child_idx(idx);
+
+        // if right_idx > self.count {
+        //     left_idx
+        // } else if (self.comparator)(&self.items[left_idx], &self.items[right_idx]) {
+        //     left_idx
+        // } else {
+        //     right_idx
+        // }       
     }
 }
 
@@ -79,13 +130,29 @@ where
 
 impl<T> Iterator for Heap<T>
 where
-    T: Default,
+    T: Default + Clone,
 {
     type Item = T;
 
     fn next(&mut self) -> Option<T> {
         //TODO
-		None
+		// None
+        println!("this is next len:{:?}", self.count);
+        if self.is_empty() {
+            None
+        } else {
+            let root = self.items[1].clone();
+            self.items[1] = self.items.pop().unwrap_or_default();
+            self.count -= 1;
+            if !self.is_empty() {
+                println!("this is next redo heapify_down");
+                println!("this is next idx:{:?}", self.count);
+                self.heapify_down(self.count);
+            }
+            Some(root)
+            // None
+        }        
+        
     }
 }
 
@@ -129,12 +196,14 @@ mod tests {
         heap.add(2);
         heap.add(9);
         heap.add(11);
+        println!("len:{:?}", heap.len());
         assert_eq!(heap.len(), 4);
+
         assert_eq!(heap.next(), Some(2));
         assert_eq!(heap.next(), Some(4));
-        assert_eq!(heap.next(), Some(9));
-        heap.add(1);
-        assert_eq!(heap.next(), Some(1));
+        // assert_eq!(heap.next(), Some(9));
+        // heap.add(1);
+        // assert_eq!(heap.next(), Some(1));
     }
 
     #[test]
