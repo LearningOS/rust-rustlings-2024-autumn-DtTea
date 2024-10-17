@@ -2,20 +2,25 @@
 	graph
 	This problem requires you to implement a basic graph functio
 */
-// I AM NOT DONE
+
 
 use std::collections::{HashMap, HashSet};
 use std::fmt;
+
 #[derive(Debug, Clone)]
 pub struct NodeNotInGraph;
+
+
 impl fmt::Display for NodeNotInGraph {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "accessing a node that is not in the graph")
     }
 }
+
 pub struct UndirectedGraph {
     adjacency_table: HashMap<String, Vec<(String, i32)>>,
 }
+
 impl Graph for UndirectedGraph {
     fn new() -> UndirectedGraph {
         UndirectedGraph {
@@ -30,6 +35,23 @@ impl Graph for UndirectedGraph {
     }
     fn add_edge(&mut self, edge: (&str, &str, i32)) {
         //TODO
+        println!("adding edge: {:?}", edge);
+        let (from_node, to_node, weight) = edge;
+        if !self.contains(from_node) {
+            self.add_node(from_node);
+        }
+        if !self.contains(to_node) {
+            self.add_node(to_node);
+        }
+        self.adjacency_table_mutable()
+            .get_mut(from_node)
+            .unwrap()
+            .push((to_node.to_string(), weight));    
+        
+        self.adjacency_table_mutable()
+            .get_mut(to_node)
+            .unwrap()
+            .push((from_node.to_string(), weight)); 
     }
 }
 pub trait Graph {
@@ -38,10 +60,27 @@ pub trait Graph {
     fn adjacency_table(&self) -> &HashMap<String, Vec<(String, i32)>>;
     fn add_node(&mut self, node: &str) -> bool {
         //TODO
-		true
+		// true
+        if !self.contains(node) {
+            self.adjacency_table_mutable().insert(node.to_string(), Vec::new());
+            true
+        } else {
+            false
+        }       
     }
     fn add_edge(&mut self, edge: (&str, &str, i32)) {
         //TODO
+        let (from_node, to_node, weight) = edge;
+        if !self.contains(from_node) {
+            self.add_node(from_node);
+        }
+        if !self.contains(to_node) {
+            self.add_node(to_node);
+        }
+        self.adjacency_table_mutable()
+            .get_mut(from_node)
+            .unwrap()
+            .push((to_node.to_string(), weight));       
     }
     fn contains(&self, node: &str) -> bool {
         self.adjacency_table().get(node).is_some()
@@ -51,11 +90,17 @@ pub trait Graph {
     }
     fn edges(&self) -> Vec<(&String, &String, i32)> {
         let mut edges = Vec::new();
+        // let mut found = false;
         for (from_node, from_node_neighbours) in self.adjacency_table() {
             for (to_node, weight) in from_node_neighbours {
                 edges.push((from_node, to_node, *weight));
+                // found = true;
             }
+
         }
+ 
+        
+        
         edges
     }
 }
